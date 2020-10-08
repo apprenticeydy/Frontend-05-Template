@@ -1,0 +1,206 @@
+<style>
+    .cell {
+        width: 100px;
+        height: 100px;
+        background-color: green;
+        display: inline-block;
+        border: 1px solid #ffffff;
+        vertical-align: middle;
+        line-height: 100px;
+        font-size: 50px;
+        text-align: center;
+    }
+</style>
+
+<div id="board"></div>
+<script>
+    let pattern = [
+        0, 0, 2,
+        0, 1, 0,
+        0, 0, 0
+    ];
+    let color = 1;
+
+    function show() {
+        let board = document.getElementById("board");
+        board.innerHTML = "";
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                let cell = document.createElement("div");
+                cell.classList.add("cell");
+                /*
+                x equal to j
+                y equal to 3 times i
+                */
+
+                cell.innerText = pattern[i * 3 + j] == 2 ? "X" :
+                    pattern[i * 3 + j] == 1 ? "O" : "";
+
+                cell.addEventListener("click", () => move(j, i))
+                board.appendChild(cell)
+            }
+            board.appendChild(document.createElement("br"));
+
+        }
+    }
+
+    function move(x, y) {
+        pattern[y * 3 + x] = color;
+        //if (check(pattern, color)) {
+        //    alert(color == 2 ? "X is winner" : "O is winner");
+        //}
+        color = 3 - color;
+        console.log([bestChoice(pattern, color), color]);
+        show();
+        if (willWin(pattern, color)) {
+            console.log(color == 2 ? "X will win" : "O will win")
+        }
+
+        computerMove();
+    }
+
+    // check horizontal
+    function check(pattern, color) {
+        for (let i = 0; i < 3; i++) {
+            let win = true;
+            for (let j = 0; j < 3; j++) {
+                if (pattern[i * 3 + j] !== color) {
+                    win = false;
+                    continue;
+                }
+            }
+            if (win)
+                return true;
+        }
+
+        // check vertical
+        for (let i = 0; i < 3; i++) {
+            let win = true;
+            for (let j = 0; j < 3; j++) {
+                if (pattern[j * 3 + i] !== color) {
+                    win = false;
+                    continue;
+                }
+            }
+            if (win)
+                return true;
+        }
+        // check diagonal
+        {
+            let win = true;
+            for (let j = 0; j < 3; j++) {
+                if (pattern[j * 3 + j] !== color) {
+                    win = false;
+                    continue;
+                }
+            }
+            if (win)
+                return true;
+        } {
+            let win = true;
+            for (let j = 0; j < 3; j++) {
+                if (pattern[j * 3 + (2 - j)] !== color) {
+                    win = false;
+                    continue;
+                }
+            }
+            if (win)
+                return true;
+        }
+    }
+
+    // Join AI  depend check
+    function computerMove() {
+        let choose = bestChoice(pattern, color);
+        if (choose.point)
+            pattern[choose.point] = color;
+
+        color = 3 - color;
+        show();
+        if (willWin(pattern, color)) {
+            console.log(color == 2 ? "X will win" : "O will win")
+        }
+    }
+    // check next step will win in turn
+    function willWin(pattern, color) {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                // to check chess was done (dont double step in one unit)
+                if (pattern[i * 3 + j])
+                    continue;
+
+                let tmp = clone(pattern);
+                tmp[i * 3 + j] = color;
+                if (check(tmp, color))
+                    return i * 3 + j;
+
+            }
+
+        }
+        return null;
+    }
+
+
+
+    //offical method with video
+
+    /*
+    当认定无法取胜的时候就不挣扎了
+    */
+    function bestChoice(pattern, color) {
+        let point = willWin(pattern, color);
+        if (point) {
+            return {
+                point: point,
+                result: 1
+            };
+        }
+
+        // 1 = win,  0 = tie
+        let result = -1;
+
+        outer: for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (pattern[i * 3 + j]) {
+                    continue
+                }
+                let tmp = clone(pattern);
+                tmp[i * 3 + j] = color;
+                let r = bestChoice(tmp, 3 - color).result;
+
+                // why use nagative sign?
+                // to choose relative worst in turn?
+                // because to get one way to win fast
+                // so choose the end value(max array length if possible) when cant get win
+
+                // so the method name isnt should bestChoice(have confusing) 
+                if (-r >= result) {
+                    result = -r;
+                    point = i * 3 + j;
+                }
+
+                if (result === 1)
+                    break outer;
+
+            }
+        }
+        return {
+            point: point,
+            result: point ? result : 0
+        };
+    }
+
+
+
+    function clone(pattern) {
+        //0.0 deep clone a object
+        //return JSON.parse(JSON.stringify(pattern));
+
+        //becauce the child Object is Object also. 
+        //it made pass by reference
+        //So cant use Object.create()
+        return Object.create(pattern);
+    }
+    show();
+    console.log(bestChoice(pattern, color));
+</script>
