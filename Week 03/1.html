@@ -1,0 +1,32 @@
+<script>
+    // wrong in vedio Reg
+    // 9..   这类的字符也会匹配成数字
+    // 既然可以用 " " 来替代\s
+
+    var regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+
+    var regexp2 = /([0-9]+(\.[0-9]+)?)|([\s\t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+
+    var dictionary = ["Number", "Whitespace", "LineTerminator", "*", "/", "+", "-"];
+    var dictionary2 = ["Number", "Number", "Whitespace", "LineTerminator", "*", "/", "+", "-"];
+
+    function tokenize(source) {
+        var result = null;
+        while (true) {
+            //result = regexp.exec(source);
+            result = regexp2.exec(source);
+
+            if (!result) break;
+
+            // 正则第0个 是匹配的字符
+            //for (var i = 1; i <= dictionary.length; i++) {
+            for (var i = 1; i <= dictionary2.length; i++) {
+                if (result[i])
+                    console.log(dictionary[i - 1]);
+            }
+            console.log(result);
+
+        }
+    }
+    tokenize("102.4 + 10 * 25");
+</script>

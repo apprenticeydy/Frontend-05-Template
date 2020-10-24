@@ -1,0 +1,189 @@
+<script>
+    // wrong in vedio Reg
+    // 9..   这类的字符也会匹配成数字
+    // 既然可以用 " " 来替代\s
+
+    var regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+
+    var regexp2 = /([0-9]+(\.[0-9]+)?)|([\s\t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+
+    var dictionary = ["Number", "Whitespace", "LineTerminator", "*", "/", "+", "-"];
+    var dictionary2 = ["Number", "Number", "Whitespace", "LineTerminator", "*", "/", "+", "-"];
+
+    function* tokenize(source) {
+        var result = null;
+        var lastIndex = 0;
+        while (true) {
+            lastIndex = regexp.lastIndex;
+            result = regexp.exec(source);
+
+            if (!result) break;
+
+            //  由于并没有 ^$ 同时正则匹配的并不是完整的字符串(而是部分分组), 所以匹配结果result[0] 跟分组内的结果是一致的,  由于匹配的并不是完整的字符串,  所以这个方法在本例是存在问题的
+            if (regexp.lastIndex - lastIndex > result[0].length) {
+                console.log('regexp.lastIndex - lastIndex > result[0].length');
+                break;
+            }
+
+            let token = {
+                type: null,
+                value: null
+            }
+
+
+            // 正则第0个 是匹配的字符
+            for (var i = 1; i <= dictionary.length; i++) {
+                if (result[i])
+                    token.type = dictionary[i - 1];
+            }
+            token.value = result[0];
+            yield token;
+
+        }
+        yield {
+            type: "EOF"
+        };
+    }
+    let source = [];
+    //tokenize("102.4 + 10 * 25"
+    //tokenize("5 * 10 / 5")
+    //tokenize("1 + 2 * 5 + 3")
+    //tokenize("5 * 5 + 1")
+    for (let token of tokenize("5 * 5 + 1")) {
+        if (token.type !== "Whitespace" && token.type !== "LineTerminator")
+            source.push(token);
+    }
+
+    //tokens 视频的代码不完整,  没看见 那里定义的tokens
+    // 读取直到EOF结束  , 全部包进一个Expression
+    function Expression(source) {
+        if (source[0].type === "AdditiveExpression") {
+            let node = {
+                type: "Expression",
+                children: [source.shift(), source.shift()]
+            };
+            source.unshift(node);
+            return node;
+        }
+        AdditiveExpression(source);
+        return Expression(source);
+    }
+
+    function AdditiveExpression(source) {
+        if (source[0].type === "MultiplicativeExpression") {
+            let node = {
+                type: "AdditiveExpression",
+                children: [source[0]]
+            };
+            source[0] = node;
+            return AdditiveExpression(source);
+        }
+
+        if (source[0].type === "AdditiveExpression" && source[1] && source[1].type === "+") {
+            let node = {
+                    type: "AdditiveExpression",
+                    operator: "+",
+                    children: []
+                }
+                /*
+                    如 Num +５＊ 10
+                    移出两次后等 * 10
+                    (先算乘除)优先取出Multi Obj 然后在将Add 加入
+                    children的结构就是 Add obj + Mul Obg
+                */
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            MultiplicativeExpression(source);
+            node.children.push(source.shift());
+            source.unshift(node);
+            return AdditiveExpression(source);
+        }
+
+        if (source[0].type === "AdditiveExpression" && source[1] && source[1].type === "-") {
+            let node = {
+                    type: "AdditiveExpression",
+                    operator: "-",
+                    children: []
+                }
+                /*
+                    如 Num +５＊ 10
+                    移出两次后等 * 10
+                    (先算乘除)优先取出Multi Obj 然后在将Add 加入
+                    children的结构就是 Add obj + Mul Obg
+                */
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            MultiplicativeExpression(source);
+            node.children.push(source.shift());
+            source.unshift(node);
+            return AdditiveExpression(source);
+        }
+
+        if (source[0].type === "AdditiveExpression")
+            return source[0];
+
+        // 首次如果是Num 直接跳过所有条件进入Multi 
+        MultiplicativeExpression(source);
+        return AdditiveExpression(source);
+    }
+
+    function MultiplicativeExpression(source) {
+        /*
+        首次将第一个数字变成 Multi对象 后  剩下的是 *Num*Num
+        然后shift三次分别是
+        Multi对象, operator, Num
+        将结果放入 children,  上面就是children的结构
+        然后将新的Multi对象重新放入 source[0].
+
+        恢复计算时首先要递归进入到最深的一层children 中的 Multi对象是需要最先计算的
+
+         */
+
+        if (source[0].type === "Number") {
+            let node = {
+                type: "MultiplicativeExpression",
+                children: [source[0]]
+            };
+            source[0] = node;
+            return MultiplicativeExpression(source);
+        }
+
+
+        if (source[0].type === "MultiplicativeExpression" && source[1] && source[1].type === "*") {
+            let node = {
+                type: "MultiplicativeExpression",
+                operator: "*",
+                children: []
+            }
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            source.unshift(node);
+            return MultiplicativeExpression(source);
+        }
+
+        if (source[0].type === "MultiplicativeExpression" && source[1] && source[1].type === "/") {
+            let node = {
+                type: "MultiplicativeExpression",
+                operator: "/",
+                children: []
+            }
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            source.unshift(node);
+            return MultiplicativeExpression(source);
+        }
+
+        if (source[0].type === "MultiplicativeExpression")
+            return source[0];
+
+        // 要求输入的运算式必须符合标准  如: 5 * 10 / 5
+        // 这个return 不会被执行
+        //return MultiplicativeExpression(source);
+    }
+
+    //MultiplicativeExpression(source);
+    //AdditiveExpression(source);
+    Expression(source);
+</script>

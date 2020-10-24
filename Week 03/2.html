@@ -1,0 +1,47 @@
+<script>
+    // wrong in vedio Reg
+    // 9..   这类的字符也会匹配成数字
+    // 既然可以用 " " 来替代\s
+
+    var regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+
+    var regexp2 = /([0-9]+(\.[0-9]+)?)|([\s\t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+
+    var dictionary = ["Number", "Whitespace", "LineTerminator", "*", "/", "+", "-"];
+    var dictionary2 = ["Number", "Number", "Whitespace", "LineTerminator", "*", "/", "+", "-"];
+
+    function* tokenize(source) {
+        var result = null;
+        var lastIndex = 0;
+        while (true) {
+            lastIndex = regexp.lastIndex;
+            result = regexp.exec(source);
+
+            if (!result) break;
+
+            //RegExp.prototype.exec() 是作为iterate 将分组依次匹配
+            //由于并没有 ^$ 同时正则匹配的并不是完整的字符串(而是部分分组), 所以匹配结果result[0] 跟分组内的结果是一致的,  由于匹配的并不是完整的字符串,  所以这个方法在本例是存在问题的
+            if (regexp.lastIndex - lastIndex > result[0].length) {
+                console.log('regexp.lastIndex - lastIndex > result[0].length');
+                break;
+            }
+
+            let token = {
+                type: null,
+                value: null
+            }
+
+
+            // 正则第0个 是匹配的字符
+            for (var i = 1; i <= dictionary.length; i++) {
+                if (result[i])
+                    token.type = dictionary[i - 1];
+            }
+            token.value = result[0];
+            yield token;
+
+        }
+    }
+    for (let token of tokenize("102.a.4 + 10 * 25"))
+        console.log(token);
+</script>
