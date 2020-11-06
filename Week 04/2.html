@@ -1,0 +1,65 @@
+<script>
+    function kmp(source, pattern) {
+        let table = new Array(pattern.length).fill(0);
+
+        // 将　其变成局部变量
+        // 检测自身的重复情况
+
+        // 自身存在重复 如 aac
+
+        // baaac 当检测到 第三个a的时候发现不匹配(对应c), 将目标向前推一位检测
+        // 这样就不需要再次检测目标字符串中的第一个a了 
+
+        {
+            let i = 1;
+            let j = 0;
+            // 注意　ｉ　是从１开始的，　table 相当于从第二个　
+            while (i < pattern.length) {
+                if (pattern[i] === pattern[j]) {
+                    j++;
+                    i++;
+                    table[i] = j;
+                } else {
+                    if (j > 0) {
+                        j = table[j];
+                    } else {
+                        i++;
+                    }
+
+                }
+            }
+
+            console.log(table);
+        }
+
+        {
+            let i = 0;
+            let j = 0;
+            while (i < source.length) {
+
+                if (source[i] === pattern[j]) {
+                    j++;
+                    i++;
+                } else {
+                    if (j > 0) {
+                        j = table[j];
+                    } else {
+                        i++;
+                    }
+
+                }
+
+                if (j === pattern.length)
+                    return true;
+            }
+            return false;
+        }
+
+
+    }
+    // abcdabce
+    // aaabaac
+    console.log(kmp("abc", "abc"));
+
+    //
+</script>

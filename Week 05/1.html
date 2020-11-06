@@ -1,0 +1,80 @@
+<script>
+    //利用 Proxy 设置代理钩子拦截
+    //本例使用 obj作为 Map的Key 由于obj是引用传递, 每当原值改变的时候key也会随之发生变化
+
+    let callbacks = new Map;
+    let reactivetyCache = new Map;
+    let usedReactiveties = [];
+
+    let object = {
+        a: 1,
+        b: 2
+    }
+
+    // let po = new Proxy(object, {
+    //     set(obj, prop, val) {
+    //         console.log(obj, prop, val);
+    //     }
+    // })
+    let po = reactive(object);
+    effect(() => {
+        console.log(po.a)
+    });
+
+    function effect(callback) {
+        //注意这里是全局 callback  如果用数组,当给不用对象加入时就会有大量的性能损耗
+        //callbacks.push(callback);
+        usedReactiveties = [];
+        callback();
+        console.log(usedReactiveties);
+        for (let reactivity of usedReactiveties) {
+            if (!callbacks.has(reactivity[0])) {
+                callbacks.set(reactivity[0], new Map);
+            }
+
+            if (!callbacks.get(reactivity[0]).has(reactivity[1])) {
+                callbacks.get(reactivity[0]).set(reactivity[1], [])
+            }
+
+            callbacks.get(reactivity[0]).get(reactivity[1]).push(callback);
+        }
+    }
+
+
+    function reactive(object) {
+        if (reactivetyCache.has(object))
+            return reactivetyCache.get(object);
+
+        let proxy = new Proxy(object, {
+            set(obj, prop, val) {
+                obj[prop] = val; // 改变原始对象
+                //console.log(obj, prop, val);
+                // for (let callback of callbacks) {
+                //     callback();
+                // }
+
+                if (callbacks.get(obj)) {
+                    if (callbacks.get(obj).get(prop)) {
+                        for (let callback of callbacks.get(obj).get(prop)) {
+                            callback();
+                        }
+                    }
+                }
+            },
+            get(obj, prop) {
+                //console.log(obj, prop);
+                usedReactiveties.push([obj, prop])
+
+                //使其支持 po.a.b 这样的情况
+                if (typeof obj[prop] === "object")
+                    return reactive(obj[prop]);
+                return obj[prop];
+            }
+        });
+        reactivetyCache.set(object, proxy);
+        return proxy;
+    }
+
+    po.a = 3;
+    po.x = 5;
+</script>

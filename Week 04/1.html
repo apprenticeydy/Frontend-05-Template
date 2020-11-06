@@ -1,0 +1,57 @@
+<script>
+    //let $ = Symbol("$");
+    class Trie {
+        constructor() {
+            this.root = Object.create(null);
+        }
+        insert(word) {
+            let node = this.root;
+
+            // 这里要注意一下, 按照JS的语义对象是引用传递
+            // 首先node - root, 通过引用传递加入 node[c] = 首个字符  初始化为新的对象
+            // 将局部变量node 重新赋值为新的 node[c]对象 次个字符
+            // for 遍历后 在其结尾加入 $
+
+            //在第二次调用 insert 的时候, 重复上述过程(root中已经保留了 上次的结果)  所以 是只有当两个字符串完全相等的时候$ 才会累加. 
+            for (let c of word) {
+                if (!node[c])
+                    node[c] = Object.create(null);
+
+                node = node[c];
+            }
+            if (!("$" in node))
+                node["$"] = 0;
+
+            node["$"]++;
+        }
+        most() {
+            let max = 0;
+            let maxWord = null;
+            let visit = (node, word) => {
+                if (node[$] && node[$] > max) {
+                    max = node[$];
+                    maxWord = word;
+                }
+
+                for (let p in node) {
+                    visit(node[p], word + p);
+                }
+            }
+        }
+    }
+
+    function randomWord(length) {
+        var s = "";
+        for (let i = 0; i < length; i++) {
+            //The charCodeAt() method returns an integer between 0 and 65535 representing the UTF-16 code unit at the given index.
+            s += String.fromCharCode(Math.random() * 26 + "a".charCodeAt(0));
+        }
+        console.log(s);
+        return s;
+    }
+    let trie = new Trie();
+    for (let i = 0; i < 10; i++) {
+        trie.insert(randomWord(4));
+
+    }
+</script>
