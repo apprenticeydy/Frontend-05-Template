@@ -1,3 +1,9 @@
+R:<input id="r" type="range" /> B:
+<input id="b" type="range" /> G:
+<input id="g" type="range" />
+
+<div id="color" style="width:100px; height:100px"></div>
+
 <script>
     //利用 Proxy 设置代理钩子拦截
     //本例使用 obj作为 Map的Key 由于obj是引用传递, 每当原值改变的时候key也会随之发生变化
@@ -7,8 +13,9 @@
     let usedReactiveties = [];
 
     let object = {
-        a: 1,
-        b: 2
+        r: 1,
+        b: 2,
+        g: 2
     }
 
     // let po = new Proxy(object, {
@@ -18,14 +25,26 @@
     // })
     let po = reactive(object);
     effect(() => {
-        console.log(po.a)
+        document.getElementById('r').value = po.r;
+    });
+    effect(() => {
+        document.getElementById('g').value = po.g;
+    });
+    effect(() => {
+        document.getElementById('b').value = po.b;
+    });
+    document.getElementById('r').addEventListener("input", event => po.r = event.target.value);
+    document.getElementById('g').addEventListener("input", event => po.g = event.target.value);
+    document.getElementById('b').addEventListener("input", event => po.b = event.target.value);
+    effect(() => {
+        document.getElementById('color').style.backgroundColor = `rgb(${po.r},${po.g},${po.b})`;
     });
 
     function effect(callback) {
         //注意这里是全局 callback  如果用数组,当给不用对象加入时就会有大量的性能损耗
         //callbacks.push(callback);
         usedReactiveties = [];
-        callback();
+        callback(); //  调用查看那些数据出发了 .get
         console.log(usedReactiveties);
         for (let reactivity of usedReactiveties) {
             if (!callbacks.has(reactivity[0])) {
