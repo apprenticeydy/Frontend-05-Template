@@ -1,0 +1,88 @@
+<script>
+    //字符串查找abcdef
+    function match(string) {
+        let state = start;
+        for (let c of string) {
+            state = state(c);
+        }
+        return state === end;
+    }
+
+    function start(c) {
+        if (c === "a")
+            return foundA;
+        else
+            return start;
+    }
+
+    function end(c) {
+        return end;
+    }
+
+    function foundA(c) {
+        if (c === "b") {
+            return foundB;
+        } else {
+            return start(c);
+        }
+    }
+
+    function foundB(c) {
+        if (c === "c") {
+            return foundC;
+        } else {
+            return start(c);
+        }
+    }
+
+    function foundC(c) {
+        if (c === "d") {
+            return foundD;
+        } else {
+            return start(c);
+        }
+    }
+
+    function foundD(c) {
+        if (c === "e") {
+            return foundE;
+        } else {
+            return start(c);
+        }
+    }
+
+    function foundE(c) {
+        if (c === "f") {
+            return end;
+        } else {
+            return start(c);
+        }
+    }
+
+    match("I am great");
+
+
+
+    //搜索 abcabcabx
+    //调整状态函数顺序,  注意到第二个 abc的时候C如果错了 应该回到b
+    function foundA2(c) {
+        if (c === "b") {
+            return foundB2;
+        } else {
+            return start(c);
+        }
+    }
+
+    function foundB2(c) {
+        if (c === "x") {
+            return end;
+        } else {
+            return foundB(c);
+        }
+    }
+
+
+
+    // 需要思考 如果需要查找的是一个未知的字符串, 如何去设计匹配机制呢哦
+    // 可参考KMP算法
+</script>
