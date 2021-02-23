@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Launch Program",
-            "program": "${workspaceFolder}/Week 08/http/client1.js",
+            "program": "${workspaceFolder}/Week 09/client.js",
             "request": "launch",
             "skipFiles": [
                 "<node_internals>/**"

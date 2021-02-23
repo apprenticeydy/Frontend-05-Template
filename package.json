@@ -1,0 +1,23 @@
+{
+  "name": "frontend-05-template",
+  "version": "1.0.0",
+  "description": "## ES6 基础语法",
+  "main": "index.js",
+  "dependencies": {
+    "css": "^3.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apprenticeydy/Frontend-05-Template.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/apprenticeydy/Frontend-05-Template/issues"
+  },
+  "homepage": "https://github.com/apprenticeydy/Frontend-05-Template#readme"
+}
