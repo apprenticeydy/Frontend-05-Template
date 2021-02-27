@@ -9,6 +9,7 @@
     Promise
     async/await
 
+void 0 == undefined = true 
 
 
 3. 五子棋

@@ -1,0 +1,49 @@
+<div id="a">
+    <span>1</span>
+    <p>2</p>
+    <a>3</a>
+    <div>4</div>
+</div>
+
+<!-- 实现节点逆序 -->
+<script>
+    let element = document.getElementById("a");
+    // method 1  最笨的方式
+    function reverseChildren(element) {
+        let children = Array.prototype.slice.call(element.childNodes);
+        for (let child of children) {
+            element.removeChild(child);
+        }
+        //效果等于remove
+        //element.innerHTML ="";
+
+        children.reverse();
+        for (let child of children) {
+            element.appendChild(child);
+        }
+    }
+
+    //DOM Api Node 特性, 在append的时候会自动将其remove
+    function reverseChildren2(element) {
+        var l = element.childNodes.length;
+
+        //从最后一个开始 一次执行一次追加操作
+        while (l-- > 0) {
+            element.appendChild(element.childNodes[l]);
+        }
+    }
+    //利用 DOM RANGE API ,  相比 method2  不需要反复使 html重新排版渲染, 不必浪费不必要的效率
+    function reverseChildren3(element) {
+        let range = new Range();
+        range.selectNodeContents(element);
+
+        let fragment = range.extractContents();
+        var l = fragment.childNodes.length;
+        while (l-- > 0) {
+            fragment.appendChild(element.childNodes[l]);
+        }
+        //通过操作fragment 然后一次性进行排版渲染
+        element.appendChild(fragment);
+    }
+    //reverseChildren(element);
+</script>
