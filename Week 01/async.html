@@ -106,6 +106,7 @@
     }
 
     async function go4() {
+        console.log(1);
         while (true) {
             green();
             await happen(document.getElementById("next"), "click");
@@ -115,7 +116,7 @@
             await happen(document.getElementById("next"), "click");
         }
     }
-
+    go3();
     // use * sign represent is a generator function
     // use yield  
     function* go5() {
